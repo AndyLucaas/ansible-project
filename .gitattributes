@@ -3,8 +3,8 @@
 *.yaml linguist-language=Ansible
 
 # Forcer les templates Jinja à être reconnus comme "Jinja" (ou YAML)
-*.j2 linguist-language=Jinja
-*.jinja2 linguist-language=Jinja
+*.j2 linguist-language=Ansible
+*.jinja2 linguist-language=Ansible
 
 # Forcer le Vagrantfile à être reconnu comme "Vagrant"
 Vagrantfile linguist-language=Vagrant
