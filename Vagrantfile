@@ -92,8 +92,7 @@ Vagrant.configure("2") do |config|
       mkdir -p /home/vagrant/.ssh
     SHELL
   end
-  
-  # Serveur haproxy 1 et 2
+    # Serveur haproxy 1 et 2
   config.vm.define "haproxy" do |haproxy|
     haproxy.vm.box = "debian/bookworm64"
     haproxy.vm.hostname = "haproxy"
