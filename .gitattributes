@@ -1,5 +1,5 @@
 # 1. Forcer le Vagrantfile à être reconnu comme "Vagrant" (et non Ruby)
-Vagrantfile linguist-language=Vagrant
+vagrantfile linguist-language=Vagrant
 
 # 2. Forcer les playbooks Ansible à être reconnus comme YAML
 *.yml linguist-language=Ansible
