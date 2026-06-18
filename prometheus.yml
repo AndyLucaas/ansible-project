@@ -1,0 +1,88 @@
+---
+- name: Installer et configurer Prometheus
+  hosts: other
+  become: true
+  tasks:
+    - name: Télécharger Prometheus
+      ansible.builtin.get_url:
+        url: https://github.com/prometheus/prometheus/releases/download/v2.47.0/prometheus-2.47.0.linux-amd64.tar.gz
+        dest: /tmp/prometheus.tar.gz
+
+    - name: Décompresser Prometheus
+      ansible.builtin.unarchive:
+        src: /tmp/prometheus.tar.gz
+        dest: /opt/
+        remote_src: yes
+
+    - name: Créer un utilisateur Prometheus
+      ansible.builtin.user:
+        name: prometheus
+        shell: /bin/false
+
+    - name: Créer les répertoires de configuration et de données pour Prometheus
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: prometheus
+        group: prometheus
+        mode: '0755'
+      loop:
+        - /etc/prometheus
+        - /var/lib/prometheus
+
+    - name: Déplacer les fichiers de configuration de Prometheus
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /opt/prometheus-2.47.0.linux-amd64/prometheus.yml
+        dest: /etc/prometheus/prometheus.yml
+        owner: prometheus
+        group: prometheus
+
+    - name: Déplacer les binaires Prometheus et promtool
+      ansible.builtin.copy:
+        remote_src: yes
+        src: "{{ item }}"
+        dest: /usr/local/bin/
+        mode: '0755'
+      loop:
+        - /opt/prometheus-2.47.0.linux-amd64/prometheus
+        - /opt/prometheus-2.47.0.linux-amd64/promtool
+
+    - name: Créer le fichier de service systemd pour Prometheus
+      ansible.builtin.template:
+        src: prometheus.service.j2
+        dest: /etc/systemd/system/prometheus.service
+
+    - name: Recharger les services systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Démarrer et activer Prometheus
+      ansible.builtin.systemd:
+        name: prometheus
+        enabled: yes
+        state: started
+    
+    - name: regroupement de l'adresse ip des machine cibles ou target
+      set_fact:
+        prometheus_targets:
+          - 192.168.56.11
+          - 192.168.56.12
+          - 192.168.56.13
+          - 192.168.56.14
+          - 192.168.56.15
+          - 192.168.56.16
+          - 192.168.56.17
+    
+    - name: mise a jour du fichier de configuration de prometheus
+      blockinfile:
+        path: /etc/prometheus/prometheus.yml
+        marker: "# BEGIN ANSIBLE MANAGED TARGETS"
+        block: |
+          scrape_configs:
+            - job_name: 'static_targets'
+              static_configs:
+                - targets:
+                  {% for ip in prometheus_targets %}
+                    - "{{ ip }}:9090"
+                  {% endfor %}

@@ -1,0 +1,20 @@
+---
+- name: gen private key and self-signed certificate for CA
+  hosts: localhost
+  become: true
+  tasks: 
+    - name: private key
+      openssl_privatekey:
+        path: /etc/ssl/private/ca.key
+        size: 2048
+        type: RSA
+    - name: Générer le certificat auto-signé de la CA
+      openssl_certificate:
+        path: /etc/ssl/certs/ca.crt
+        privatekey_path: /etc/ssl/private/ca.key
+        provider: selfsigned
+        subject:
+          common_name: My Local CA
+          country_name: FR
+          organization_name: MyCompany
+        validity_end: "+3650d"

@@ -1,0 +1,12 @@
+Log created: 2024-10-18T06:47:26.863788000Z
+Process ID:  22432 (0x57a0)
+Parent PID:  2141 (0x85d)
+Executable:  /usr/lib/virtualbox/VBoxHeadless
+Arg[0]: /usr/lib/virtualbox/VBoxHeadless
+Arg[1]: --comment
+Arg[2]: projet_stage_serveur2_1728993168085_71481
+Arg[3]: --startvm
+Arg[4]: 9cd78425-6888-43b0-a00c-d7136729689a
+Arg[5]: --vrde
+Arg[6]: config
+AddRef: illegal refcnt=3221225469 state=2

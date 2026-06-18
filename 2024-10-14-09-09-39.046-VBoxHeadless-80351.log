@@ -1,0 +1,12 @@
+Log created: 2024-10-14T09:09:39.461799000Z
+Process ID:  80351 (0x139df)
+Parent PID:  2836 (0xb14)
+Executable:  /usr/lib/virtualbox/VBoxHeadless
+Arg[0]: /usr/lib/virtualbox/VBoxHeadless
+Arg[1]: --comment
+Arg[2]: projet_stage_serveur3_1728047218731_32989
+Arg[3]: --startvm
+Arg[4]: a63ea8b9-0eef-4453-aed1-68cdc130a8a9
+Arg[5]: --vrde
+Arg[6]: config
+AddRef: illegal refcnt=3221225469 state=2

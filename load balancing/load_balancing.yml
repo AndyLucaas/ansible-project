@@ -1,0 +1,14 @@
+---
+  - name: Installation haproxy
+    hosts: haproxy
+    become: true
+    tasks:
+      - name: Installation
+        apt:
+          name: haproxy
+          state: present
+      # - name: Configuration de haproxy
+      - name: Keep alived
+        apt:
+          name: keepalived
+          state: present  

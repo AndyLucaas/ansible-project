@@ -1,0 +1,98 @@
+---
+- name: Automatiser la génération et configuration des certificats SSL
+  hosts: ca, haproxy
+  become: yes
+  vars:
+    cle_prive_autorite: "/etc/ssl/private/CA.key"
+    certificat_autorite: "/etc/ssl/certs/CA.crt"
+    HAp_certificat: "/etc/ssl/certs/sitelocale.crt"
+    HAp_cle_prive: "/etc/ssl/private/sitelocale.key"
+    fichier_csr: "/etc/ssl/sitelocale.csr"
+    fichierv3_ext: "/etc/ssl/sitelocale.v3.ext"
+    haproxy_pem_: "/etc/haproxy/sitelocale.pem"
+  tasks:
+
+    - name: Genetation de la cle privee de la CA
+      ansible.builtin.shell:
+        cmd: >
+          openssl genrsa -aes256 -out {{ cle_prive_autorite }} 4096
+      when: inventory_hostname == "ca"
+      args:
+        creates: "{{ cle_prive_autorite }}"
+
+    - name: generation de certificat racine de la CA
+      ansible.builtin.shell:
+        cmd: >
+          openssl req -x509 -new -nodes -key {{ cle_prive_autorite }} -sha256 -days 1824 -out {{ certificat_autorite }}
+      when: inventory_hostname == "ca"
+      args:
+        creates: "{{ certificat_autorite }}"
+
+    - name: copie de certificat racine sur les serveurs
+      ansible.builtin.copy:
+        src: "{{ certificat_autorite }}"
+        dest: /usr/local/share/ca-certificates/CA.crt
+      notify: Update CA certificates
+
+    - name: Générer le CSR et la clé privée du serveur
+      ansible.builtin.shell:
+        cmd: >
+          openssl req -new -nodes -out {{ fichier_csr }} -newkey rsa:4096 -keyout {{ HAp_cle_prive }}
+      when: inventory_hostname in groups['haproxy']
+      args:
+        creates: "{{ fichier_csr }}"
+
+    - name: Creer le fichier du v3_ext ou fichier d'extension
+      ansible.builtin.copy:
+        dest: "{{ fichierv3_ext }}" 
+        content: |
+          authorityKeyIdentifier=keyid,issuer
+          basicConstraints=CA:FALSE
+          keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+          subjectAltName = @alt_names
+          [alt_names]
+          IP.1 = 192.168.56.16 
+          IP.2 = 192.168.56.17
+          IP.3 = 192.168.56.18
+      when: inventory_hostname in groups['haproxy']
+
+    - name: Copie de CSR et le fichier d'extension vers la CA
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ cle_prive_autorite }}"
+      with_items:
+        - "{{ fichier_csr }}"
+        - "{{ fichierv3_ext }}"
+      when: inventory_hostname in groups['haproxy']
+
+    - name: Signer le certificat avec la CA
+      ansible.builtin.shell:
+        cmd: >
+          openssl x509 -req -in sitelocale.csr
+          -CA {{ cerfificat_autorite }} -CAkey {{ cle_prive_autorite }}
+          -CAcreateserial -out sitelocale.crt
+          -days 730 -sha256 -extfile sitelocale.v3.ext
+      when: inventory_hostname == "ca"
+
+    - name: Copier le certificat signé vers HAProxy
+      ansible.builtin.copy:
+        src: sitelocale.crt"
+        dest: "{{ HAP_certificat }}"
+      when: inventory_hostname in groups['haproxy']
+
+    - name: Combiner certificat et clé pour HAProxy
+      ansible.builtin.shell:
+        cmd: >
+          cat {{ HAP_certificat }} {{ HAP_cle_prive }} > {{ haproxy_pem }}
+      when: inventory_hostname in groups['haproxy']
+
+    - name: Redémarrer HAProxy
+      ansible.builtin.service:
+        name: haproxy
+        state: restarted
+      when: inventory_hostname in groups['haproxy']
+
+  handlers:
+    - name: Update CA certificates
+      ansible.builtin.shell:
+        cmd: update-ca-certificates

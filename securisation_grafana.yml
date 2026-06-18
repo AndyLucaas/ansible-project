@@ -1,0 +1,69 @@
+---
+- name: Automatiser la génération et configuration des certificats SSL
+  hosts: ca, monitoring
+  become: yes
+  vars: 
+    cle_prive_autorite: "/etc/ssl/private/CA.key"
+    certificat_autorite: "/etc/ssl/certs/CA.crt"
+    cle_prive: "/etc/ssl/private/grafana.key"
+    fichier_csr: "/etc/ssl/grafana.csr"
+    certificat_grafana: "/etc/ssl/grafana.crt"
+    certificat_grafana_serveur: "/etc/grafana/ssl/grafana.crt"
+    cle_prive_serveur: "/etc/grafana/ssl/grafana.key"
+    fichierv3_ext: "/etc/ssl/grafana.v3.ext"
+  tasks:
+    - name: generation de la cle privee pour le certificat de grafana
+      ansible.builtin.shell:
+      cmd: >
+        openssl req -new -nodes -out {{ fichier_csr }} -newkey rsa:4096 -keyout {{ cle_prive }}
+      when: inventory_hostname == "ca"
+      args:
+        creates: "{{ fichier_csr }}"
+
+    - name: creer le fichier v3_ext ou fichier d'extension
+      ansible.builtin.copy:
+        dest: "{{ fichierv3_ext }}"
+        content: |
+          authorityKeyIdentifier=keyid,issuer
+          basicConstraints=CA:FALSE
+          keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+          subjectAltName = @alt_names
+          [alt_names]
+          IP.1 = 192.168.56.13
+      when: inventory_hostname == "ca"
+    - name: Signer le certificat avec la CA
+      ansible.builtin.shell:
+        cmd: >
+          openssl x509 -req -in {{ fichier_csr }}
+          -CA {{ cerfificat_autorite }} -CAkey {{ cle_prive_autorite }}
+          -CAcreateserial -out grafana.crt
+          -days 730 -sha256 -extfile {{ fichierv3_ext }}
+      when: inventory_hostname == "ca"
+    - name: Copier le certificat signé vers le serveur de monitoring
+      ansible.builtin.copy:
+        src: "{{ certificat_grafana }}"
+        dest: "{{ certificat_grafana_serveur }}"
+      delegate_to: monitoring
+      when: inventory_hostname == "ca"
+    - name: Copier le certificat signé vers le serveur de monitoring
+      ansible.builtin.copy:
+        src: "{{ cle_prive }}"
+        dest: "{{ cle_prive_serveur }}"
+      delegate_to: monitoring
+      when: inventory_hostname == "ca"
+    # - name: mise à jour de la configuration SSL dans grafana.ini
+    #   ansible.builtin.blockinfile:
+    #     path: /etc/grafana/grafana.ini
+    #     marker: "# {mark} l'admin a modifier le block"
+    #     block: |
+    #       [server]
+    #       protocol = https
+    #       http_port = 3000
+    #       cert_file = {{ certificat_grafana }}
+    #       cert_key = {{ cle_prive }}
+      # when: inventory_hostname == "monitoring"
+    - name: Restart Grafana service
+      service:
+        name: grafana-server
+        state: restarted
+      when: inventory_hostname == "monitoring"

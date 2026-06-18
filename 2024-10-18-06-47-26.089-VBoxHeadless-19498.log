@@ -1,0 +1,12 @@
+Log created: 2024-10-18T06:47:26.897946000Z
+Process ID:  19498 (0x4c2a)
+Parent PID:  2141 (0x85d)
+Executable:  /usr/lib/virtualbox/VBoxHeadless
+Arg[0]: /usr/lib/virtualbox/VBoxHeadless
+Arg[1]: --comment
+Arg[2]: projet_stage_ansible_1728992951380_43071
+Arg[3]: --startvm
+Arg[4]: cfe9fab9-f298-4e84-8a5c-4fb563a583b1
+Arg[5]: --vrde
+Arg[6]: config
+AddRef: illegal refcnt=3221225469 state=2

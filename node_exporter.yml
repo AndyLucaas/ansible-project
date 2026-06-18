@@ -1,0 +1,53 @@
+---
+- name: installation de node exporter
+  hosts: hosts
+  become: true
+  tasks:
+    - name: creation d un utilisateur node_exporter
+      user:
+        name: node_exporter
+        shell: /usr/sbin/nologin
+
+    - name: telecharger Node Exporter
+      get_url:
+        url: https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
+        dest: /tmp/node_exporter.tar.gz
+
+    - name: extraire Node Exporter
+      unarchive:
+        src: /tmp/node_exporter.tar.gz
+        dest: /usr/local/bin/
+        remote_src: true
+        creates: /usr/local/bin/node_exporter-1.6.1.linux-amd64
+
+    - name: deplacer les binaires de Node Exporter
+      command: mv /usr/local/bin/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/node_exporter
+
+    - name: cree un fichier de service systemd pour Node Exporter
+      copy:
+        dest: /etc/systemd/system/node_exporter.service
+        content: |
+          [Unit]
+          Description=Node Exporter
+          After=network.target
+
+          [Service]
+          User=node_exporter
+          ExecStart=/usr/local/bin/node_exporter
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Recharger systemd pour prendre en compte le nouveau service
+      command: systemctl daemon-reload
+
+    - name: Démarrer et activer Node Exporter
+      systemd:
+        name: node_exporter
+        state: started
+        enabled: true
+
+    - name: Ouvrir le port 9100
+      command: iptables -A INPUT -p tcp --dport 9100 -j ACCEPT
+
