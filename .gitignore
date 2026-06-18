@@ -1,3 +1,8 @@
 *.log
 .vscode
 .vagrant
+*.pem
+*.key
+*.crt
+*.csr
+*.j2
