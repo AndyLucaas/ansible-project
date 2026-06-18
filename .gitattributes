@@ -1,2 +1,10 @@
-*.j2 linguist-language=YAML
+# 1. Forcer le Vagrantfile à être reconnu comme "Vagrant" (et non Ruby)
+Vagrantfile linguist-language=Vagrant
+
+# 2. Forcer les playbooks Ansible à être reconnus comme YAML
 *.yml linguist-language=Ansible
+*.yaml linguist-language=Ansible
+
+# 3. (Optionnel) Si vous voulez que les templates Jinja soient aussi en YAML
+*.j2 linguist-language=Ansible
+*.jinja2 linguist-language=Ansible
