@@ -86,3 +86,4 @@
                   {% for ip in prometheus_targets %}
                     - "{{ ip }}:9090"
                   {% endfor %}
+                  
