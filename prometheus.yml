@@ -1,6 +1,6 @@
 ---
 - name: Installer et configurer Prometheus
-  hosts: other
+  hosts: monitoring
   become: true
   tasks:
     - name: Télécharger Prometheus
