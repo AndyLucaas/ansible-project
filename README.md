@@ -28,6 +28,31 @@ The environment consists of:
 * Prometheus monitoring server
 * Grafana dashboard server
 
+## Technologies Used
+
+* Ansible
+* Vagrant
+* Linux
+* HAProxy
+* Keepalived
+* Prometheus
+* Grafana
+* Node Exporter
+* SSL/TLS
+
+## Learning Outcomes
+
+Through this project, I gained practical experience with:
+
+* Infrastructure as Code (IaC)
+* Configuration Management
+* High Availability Architecture
+* Monitoring and Observability
+* Linux System Administration
+* Network Load Balancing
+* Security Hardening
+* Automation and DevOps Practices
+
 ## Project Structure
 
 ```text
@@ -100,28 +125,4 @@ Run a playbook:
 ansible-playbook -i inventory/hosts.ini playbooks/prometheus.yml
 ```
 
-## Technologies Used
-
-* Ansible
-* Vagrant
-* Linux
-* HAProxy
-* Keepalived
-* Prometheus
-* Grafana
-* Node Exporter
-* SSL/TLS
-
-## Learning Outcomes
-
-Through this project, I gained practical experience with:
-
-* Infrastructure as Code (IaC)
-* Configuration Management
-* High Availability Architecture
-* Monitoring and Observability
-* Linux System Administration
-* Network Load Balancing
-* Security Hardening
-* Automation and DevOps Practices
 
