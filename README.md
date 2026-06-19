@@ -1,4 +1,4 @@
-# Ansible Infrastructure Automation Project
+# Automated Infrastructure with Ansible and Vagrant
 
 ## Overview
 
